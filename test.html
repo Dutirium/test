@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f7f6;
+        }
+
+        .login-container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-container h2 {
+            margin-bottom: 1.5rem;
+            color: #333333;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            color: #555555;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #007bff;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+            min-height: 1.2em;
+        }
+
+        .form-group.error input {
+            border-color: #dc3545;
+        }
+
+        .form-group.success input {
+            border-color: #28a745;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            background-color: #0056b3;
+        }
+
+        .alert-box {
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+            text-align: center;
+        }
+
+        .alert-box.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>Account Login</h2>
+        
+        <div id="alertBox" class="alert-box"></div>
+
+        <form id="loginForm" novalidate>
+            <div class="form-group" id="emailGroup">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="e.g. user@example.com" autocomplete="off">
+                <div class="error-message" id="emailError"></div>
+            </div>
+
+            <div class="form-group" id="passwordGroup">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password">
+                <div class="error-message" id="passwordError"></div>
+            </div>
+
+            <button type="submit" class="btn-submit">Sign In</button>
+        </form>
+    </div>
+
+    <script>
+        // Hardcoded Credentials
+        const VALID_EMAIL = "user@example.com";
+        const VALID_PASSWORD = "Password@123";
+
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        
+        const emailGroup = document.getElementById('emailGroup');
+        const passwordGroup = document.getElementById('passwordGroup');
+        
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+        const alertBox = document.getElementById('alertBox');
+
+        // Helper function: Validate email format using Regex
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Helper function: Set error state
+        function setError(elementGroup, errorElement, message) {
+            elementGroup.classList.remove('success');
+            elementGroup.classList.add('error');
+            errorElement.innerText = message;
+        }
+
+        // Helper function: Set success state
+        function setSuccess(elementGroup, errorElement) {
+            elementGroup.classList.remove('error');
+            elementGroup.classList.add('success');
+            errorElement.innerText = '';
+        }
+
+        // Reset global alert message
+        function resetAlert() {
+            alertBox.style.display = 'none';
+            alertBox.className = 'alert-box';
+            alertBox.innerText = '';
+        }
+
+        // Display global alert message
+        function showAlert(message, type) {
+            alertBox.innerText = message;
+            alertBox.className = `alert-box ${type}`;
+            alertBox.style.display = 'block';
+        }
+
+        // Input Field Validation Rules
+        function validateInputs() {
+            const emailValue = emailInput.value.trim();
+            const passwordValue = passwordInput.value;
+            let isValid = true;
+
+            // Email Validation
+            if (emailValue === '') {
+                setError(emailGroup, emailError, 'Email address is required.');
+                isValid = false;
+            } else if (!isValidEmail(emailValue)) {
+                setError(emailGroup, emailError, 'Please enter a valid email address.');
+                isValid = false;
+            } else {
+                setSuccess(emailGroup, emailError);
+            }
+
+            // Password Validation
+            if (passwordValue === '') {
+                setError(passwordGroup, passwordError, 'Password is required.');
+                isValid = false;
+            } else if (passwordValue.length < 6) {
+                setError(passwordGroup, passwordError, 'Password must be at least 6 characters.');
+                isValid = false;
+            } else {
+                setSuccess(passwordGroup, passwordError);
+            }
+
+            return isValid;
+        }
+
+        // Real-time input clear error state on typing
+        emailInput.addEventListener('input', () => {
+            if (emailInput.value.trim() !== '') {
+                setSuccess(emailGroup, emailError);
+            }
+            resetAlert();
+        });
+
+        passwordInput.addEventListener('input', () => {
+            if (passwordInput.value !== '') {
+                setSuccess(passwordGroup, passwordError);
+            }
+            resetAlert();
+        });
+
+        // Form Submit Handler
+        loginForm.addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent page reload
+            resetAlert();
+
+            // Step 1: Client-side field validations
+            const isFormValid = validateInputs();
+
+            // Step 2: Credential Verification (Only if inputs are structurally valid)
+            if (isFormValid) {
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+
+                if (email === VALID_EMAIL && password === VALID_PASSWORD) {
+                    showAlert('Login successful! Redirecting...', 'success');
+                    // Reset input fields on success
+                    loginForm.reset();
+                    emailGroup.classList.remove('success');
+                    passwordGroup.classList.remove('success');
+                } else {
+                    showAlert('Invalid email or password combination.', 'danger');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
